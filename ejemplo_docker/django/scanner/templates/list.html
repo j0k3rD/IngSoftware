@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.6.3.min.js"
+  integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+  <h1>Scan</h1>
+
+  <form action="" method="post">
+    {% csrf_token %}
+    <input type="text" value="Export Scan">
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    var socket = io("ws://localhost:3000");
+    socket.on("result", function(csvURL) {
+      var result = document.getElementById("result");
+      var aTag = document.createElement("a");
+      aTag.setAttribute("href", csvURL);
+      aTag.setAttribute("target", "_blank");
+      aTag.innerHTML = "Download CSV";
+      result.appendChild(aTag);
+    });
+
+    var submit = $("input[type='text']");
+    submit.on("click", function(event) {
+      $ajax({
+        url: "{% url 'list' %}",
+        type: "POST",
+        data: $('form').serialize(),
+        success: function(celeryTaskID) {
+          socket.emit("subscribe", celeryTaskID);
+        }
+      })
+    });
+    event.preventDefault();
+
+  </script>
+</body>
+</html>
